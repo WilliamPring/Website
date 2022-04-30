@@ -10,12 +10,10 @@
 .cycle {
     flex-direction: row;
     text-align: center;
-    justify-content: center;
     left: 20px;
-    width: 80%;
+    width: 49.5%;
     height: 98%;
     margin-right: ".5%";
-    margin: 20;
 }
 
 .title {
@@ -27,9 +25,18 @@
     text-align: center;
 }
 
-.half_background {
-    background: linear-gradient(to top, #edeafd 55%, transparent 60%);
+.nameTitleBlack {
+    line-height:100px;
+    color: white;
+    border: 1px;
+    font-size: 30px;
+    background: black;
+    padding: 15px;
+    margin-top: 30px;
+    font-style: italic;
+    font-weight: 900;
 }
+
 
 .nameTitleWhite {
     line-height:100px;
