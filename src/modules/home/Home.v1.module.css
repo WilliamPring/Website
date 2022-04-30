@@ -1,0 +1,23 @@
+.home {
+    display:  flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    height: 100vh;
+    width: 100%;
+}
+
+.nameTitle {
+    color: white;
+    border: 1px;
+    background: black;
+    padding: 15px;
+    font-style: italic;
+    font-weight: 900;
+}
+
+.centerSocial {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}

@@ -1,0 +1,18 @@
+.iconRef {
+    align-items: center;
+    display: flex;
+    margin-bottom: 10px;
+}
+
+.iconRef > span {
+    font-size: 25px;
+    margin-left: 5px;
+}
+
+
+@media screen and (max-width: 600px) {
+    .iconRef>span {
+        font-size:  0px;
+        margin-left: 0px;
+    }
+}

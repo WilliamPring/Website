@@ -1,0 +1,46 @@
+.aboutme {
+    display:  flex;
+    height: 100vh;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    flex-direction: row;
+}
+
+.cycle {
+    flex-direction: row;
+    left: 20px;
+    width: 49.5%;
+    height: 98%;
+    margin-right: ".5%";
+}
+.sun {
+    display: inline-block;
+    border-radius: 50%;
+    height: 200px;
+    width: 200px;
+    background: orange;
+    box-shadow: 0 0 10px orange,
+        0 0 60px orange,
+        0 0 200px yellow,
+        inset 0 0 80px yellow;
+    z-index: 12;
+    z-index: -99;
+}
+@media screen and (max-width: 600px) {
+    .aboutme {
+        display: flex;
+        height: 100vh;
+        width: 100%;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+    }
+    .cycle {
+        flex-direction: row;
+        height: 49%;
+        width: 97%;
+    }
+ 
+
+}

@@ -1,0 +1,42 @@
+.home {
+    display:  flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    height: 100vh;
+    width: 100%;
+}
+
+.nameTitle {
+    color: white;
+    border: 1px;
+    background: black;
+    padding: 15px;
+    font-style: italic;
+    font-weight: 900;
+}
+
+.center {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+.centerT {
+    display: flex;
+    justify-content: center;
+}
+/* 
+.iconRef {
+    align-items: center;
+    display: flex;
+    margin-bottom: 10px;
+}
+
+.iconRef > span {
+    font-size: 25px;
+    margin-left: 5px;
+}
+*/
+@media screen and (max-width: 600px) {
+   
+} 
