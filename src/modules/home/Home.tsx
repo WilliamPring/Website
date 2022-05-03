@@ -1,8 +1,7 @@
 import * as React from "react";
 import styles from "./Home.module.css";
 import { SocialMedia } from "@components/SocialMedia";
-import arrowRight from "../../assets/arrow-right.svg";
-import Image from "next/image";
+import arrowRight from "../../icons/arrow-right.svg";
 import Link from "next/link";
 import { mediaLinks } from "@site/data/MediaLink";
 
@@ -37,10 +36,10 @@ export const Home: React.FC = () => {
             About Me
           </p>
           <Link href="#AboutMe">
-            <Image
+            <img
               src={arrowRight}
-              width={50}
-              height={50}
+              // width={50}
+              // height={50}
               style={{ transform: "rotate(90deg)" }}
             />
           </Link>

@@ -1,7 +1,7 @@
-import file from "../../../assets/file-arrow-down.svg";
-import github from "../../../assets/github.svg";
-import linkedin from "../../../assets/linkedin.svg";
-import squareEnvelope from "../../../assets/square-envelope.svg";
+import file from "../../../icons/file.svg";
+import github from "../../../icons/github.svg";
+import linkedin from "../../../icons/linkedin.svg";
+import squareEnvelope from "../../../icons/square-envelope.svg";
 import { SocialMediaProps } from "@site/types/social";
 
 export const mediaLinks: Array<SocialMediaProps> = [

@@ -10,7 +10,7 @@ export const SocialMedia: React.FC<SocialMediaProps> = ({
 }) => {
   return (
     <div className={styles.iconRef} key={name}>
-      <Image {...rest} />
+      <img {...rest} />
       <span className="social">{desc}</span>
     </div>
   );
