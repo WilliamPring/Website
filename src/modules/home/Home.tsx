@@ -17,7 +17,7 @@ export const Home: React.FC = () => {
         >
           <div style={{ marginRight: "10px" }}>
             <h1 className={styles.nameTitle}>William Pring</h1>
-            <h1 style={{ margin: "5px" }}>Software Engineer</h1>
+            <h1 style={{ margin: "5px" }}>Fake Software Engineer</h1>
           </div>
           <div>
             {mediaLinks &&
