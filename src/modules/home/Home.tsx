@@ -27,19 +27,20 @@ export const Home: React.FC = () => {
       </div>
       <div className={styles.centerT}>
         <div className={styles.centerT} style={{ marginTop: -100 }}>
-          <p
+          <span
             style={{
               transform: "rotate(90deg)",
               fontWeight: "bold",
+              width: 90,
             }}
           >
             About Me
-          </p>
+          </span>
           <Link href="#AboutMe">
             <img
               src={arrowRight}
-              // width={50}
-              // height={50}
+              width={50}
+              height={50}
               style={{ transform: "rotate(90deg)" }}
             />
           </Link>
