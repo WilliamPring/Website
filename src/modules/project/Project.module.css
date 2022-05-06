@@ -1,0 +1,22 @@
+.project {
+    display:  flex;
+    height: 100vh;
+    width: 100%;
+    flex-direction: column;
+}
+
+.cardList {
+    padding: 1.5em;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.card {
+    background: white;
+    flex: 0 1 calc(30% - 1em);
+    margin-bottom: 2em;
+}
+.cardContent {
+        padding: 1.4em;
+}

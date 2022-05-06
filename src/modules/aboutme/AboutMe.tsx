@@ -3,18 +3,19 @@ import styles from "./AboutMe.module.css";
 
 export const AboutMe: React.FC = () => {
   return (
-    <section id="AboutMe" className={styles.aboutme}>
+    <section
+      id="AboutMe"
+      className={styles.aboutme}
+      style={{ background: "white" }}
+    >
       <div
         className={styles.cycle}
         style={{
-          background: "#fff",
-          color: "#292929",
           margin: "auto",
-          fontSize: "30px",
         }}
       >
         <h1 className={styles.title}>About Me</h1>
-        <div style={{ width: "85%", margin: "auto" }}>
+        <div style={{ margin: "auto" }}>
           My name is{" "}
           <strong>
             <span className={styles.half_background}>
