@@ -1,26 +1,21 @@
 import * as React from "react";
 import styles from "./Project.module.css";
+import github from "../../icons/github.svg";
 
 export const Project: React.FC = () => {
   return (
-    <section className={styles.project}>
-      <h1>Projects</h1>
+    <section className={styles.project} id="#Project">
+      <h1 style={{ textAlign: "center", fontSize: "30px" }}>Projects</h1>
       <div className={styles.cardList}>
         <div className={styles.card}>
           <div className={styles.cardContent}>
             <h2>Website</h2>
             <p>
-              Lorem Ipsum is simply dummy text of the printing and typesetting
-              industry. Lorem Ipsum has been the industry's standard dummy text
-              ever since the 1500s, when an unknown printer took a galley of
-              type and scrambled it to make a type specimen book. It has
-              survived not only five centuries, but also the leap into
-              electronic typesetting, remaining essentially unchanged. It was
-              popularised in the 1960s with the release of Letraset sheets
-              containing Lorem Ipsum passages, and more recently with desktop
-              publishing software like Aldus PageMaker including versions of
-              Lorem Ipsum.
+              This current Website design, past interation and pervious version
             </p>
+            <div className={styles.featureCardFooter}>
+              <span style={{ padding: "1.4em" }}>Links: Learn More...</span>
+            </div>
           </div>
         </div>
         <div className={styles.card}>
@@ -38,6 +33,31 @@ export const Project: React.FC = () => {
               have evolved over the years, sometimes by accident, sometimes on
               purpose (injected humour and the like).
             </p>
+
+            <div className={styles.featureCardFooter}>
+              <span style={{ padding: "1.4em" }}>
+                <img src={github} width={30} height={30} />
+                Learn More
+              </span>
+            </div>
+          </div>
+        </div>
+        <div className={styles.card}>
+          <div className={styles.cardContent}>
+            <h2>Keyboard</h2>
+            <p>
+              We need a paradigm shift get all your ducks in a row. I just
+              wanted to give you a heads-up we need distributors to evangelize
+              the new line to local markets when does this sunset? so waste of
+              resources, yet fire up your browser, or touch base closing these
+              latest prospects is like putting socks on an octopus.
+            </p>
+            <div className={styles.featureCardFooter}>
+              <span style={{ padding: "1.4em" }}>
+                <img src={github} width={30} height={30} />
+                Learn More
+              </span>{" "}
+            </div>
           </div>
         </div>
         <div className={styles.card}>
@@ -50,6 +70,12 @@ export const Project: React.FC = () => {
               resources, yet fire up your browser, or touch base closing these
               latest prospects is like putting socks on an octopus.
             </p>
+            <div className={styles.featureCardFooter}>
+              <span style={{ padding: "1.4em" }}>
+                <img src={github} width={30} height={30} />
+                Learn More
+              </span>{" "}
+            </div>
           </div>
         </div>
       </div>
