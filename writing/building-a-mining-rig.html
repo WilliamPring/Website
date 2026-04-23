@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Building a Mining Rig · William Pring</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <main>
+    <nav class="breadcrumb">
+      <a href="../">William Pring</a> <span>/</span> Writing
+    </nav>
+
+    <article>
+      <header class="article-header">
+        <h1>Building a Mining Rig</h1>
+        <p class="article-meta">August 2017 · Tags: Mining, Ethereum, Bitcoin</p>
+      </header>
+
+      <p>In the summer of 2017 I built a 6-GPU cryptocurrency mining machine from scratch. What followed was a crash course in thermal management, hardware compatibility, and mining software — and a total bill of $5,302.47 (before Windows and electricity).</p>
+
+      <h2>Hardware</h2>
+      <table class="spec-table">
+        <tbody>
+          <tr><td>GPU</td><td>6× ASUS ROG Strix GTX 1070 8GB</td></tr>
+          <tr><td>PSU</td><td>Corsair HX1200i 1200W</td></tr>
+          <tr><td>CPU</td><td>Intel Core i3-6100</td></tr>
+          <tr><td>Motherboard</td><td>ASUS Z170-E</td></tr>
+          <tr><td>RAM</td><td>Kingston DDR4 2133</td></tr>
+          <tr><td>Storage</td><td>SanDisk SSD PLUS 120GB</td></tr>
+          <tr><td>Total cost</td><td>$5,302.47</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Problems Along the Way</h2>
+      <p>Nothing about this build went smoothly. The first major issue was faulty RAM that prevented the system from booting across multiple motherboards — a frustrating red herring that burned a lot of time early on.</p>
+
+      <p>Once the machine posted, Windows 10 would only recognize 4 of the 6 GPUs. The fix was enabling 4G encoding in the BIOS, which unlocks the memory address space needed for more than four PCIe devices. Not obvious if you haven't seen it before.</p>
+
+      <p>Mining software was its own adventure. Ethminer failed outright, so I switched to Claymore Dual Miner, which worked and had the added benefit of being able to mine two coins simultaneously.</p>
+
+      <h2>Thermal Management</h2>
+      <p>The original build packed the GPUs close together to keep the frame compact. That was a mistake. With all six cards running flat out, temperatures climbed to <strong>78–86°C</strong> — hot enough to throttle performance and risk long-term damage.</p>
+
+      <figure>
+        <img
+          src="https://blog.williampring.com/2017/08/18/Building-a-Mining-Rig/old-machine.jpg"
+          alt="Original mining rig — GPUs packed tightly together"
+          loading="lazy"
+        >
+        <figcaption>Original layout. Too little airflow between cards.</figcaption>
+      </figure>
+
+      <p>After redesigning the frame to spread the GPUs out with proper spacing, temperatures dropped to <strong>61–66°C</strong> — a meaningful improvement that restored full boost clocks and reduced fan noise.</p>
+
+      <figure>
+        <img
+          src="https://blog.williampring.com/2017/08/18/Building-a-Mining-Rig/new-machine.jpg"
+          alt="Redesigned mining rig with improved GPU spacing"
+          loading="lazy"
+        >
+        <figcaption>After the redesign. Better spacing, better airflow, 20°C cooler.</figcaption>
+      </figure>
+    </article>
+
+    <footer class="article-footer">
+      <a href="../">← Back</a>
+    </footer>
+  </main>
+</body>
+</html>

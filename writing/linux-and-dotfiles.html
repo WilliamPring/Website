@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Linux, Arch, and Ten Years of Dotfiles · William Pring</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <main>
+    <nav class="breadcrumb">
+      <a href="../">William Pring</a> <span>/</span> Writing
+    </nav>
+
+    <article>
+      <header class="article-header">
+        <h1>Linux, Arch, and Ten Years of Dotfiles</h1>
+        <p class="article-meta">Ongoing since ~2015</p>
+      </header>
+
+      <p>I switched to Linux because I stopped trusting Windows. Not in any dramatic way, just a slow build-up of questions I couldn't answer. What is this process doing? Why is this phoning home? What exactly changed after that overnight update? Windows made it genuinely difficult to know what was happening on your own machine, and the more I thought about it the more that bothered me. I wanted an OS I actually controlled, one I could understand top to bottom and shape to work the way I wanted rather than the way Microsoft wanted.</p>
+
+      <p>I started with Ubuntu because that's where most people start. It was an improvement but it still had that same quality of things happening in the background that I didn't fully understand. I kept reading, kept going deeper, and eventually landed on Arch.</p>
+
+      <h2>Why Arch</h2>
+
+      <p>Arch doesn't hold your hand. There's no graphical installer, no defaults chosen for you. You boot into a terminal and build up from nothing: partition the disk yourself, install a bootloader, configure the network, pick a desktop environment. Most people hear that and want nothing to do with it. For me it was exactly the point.</p>
+
+      <p>When you build the system piece by piece you actually know what you built. Every package is there because I put it there. Every config file has been opened and read. Nothing is running that I didn't choose to install. If something breaks I have a real shot at knowing why, because I was there when it went together. The <a href="https://wiki.archlinux.org" target="_blank" rel="noopener">Arch Wiki</a> is also genuinely some of the best technical documentation I've come across, useful well beyond Arch itself.</p>
+
+      <h2>The Setup</h2>
+
+      <p>I run i3 as my window manager. It's a tiling WM so windows don't float around overlapping each other. They tile, slotting into the layout automatically. I almost never touch the mouse. Once you get used to moving through everything by keyboard it's hard to go back.</p>
+
+      <p>The status bar is i3status-rust sitting at the top showing what I need to know. I've got three monitors: one primary on HDMI, one to the right on DVI, one to the left on DisplayPort. i3-resurrect handles saving and restoring workspace layout so I don't have to rebuild it after a reboot.</p>
+
+      <p>My shell is Zsh with the Starship prompt. Starship only shows information that's actually relevant given what directory you're in: git branch, exit codes, language versions. Antigen handles plugin management. For the terminal I use Kitty, which has GPU rendering and is noticeably snappier than most alternatives. I've had urxvt around for years as a fallback but Kitty is the daily driver now.</p>
+
+      <p>Everything I edit goes through Vim. The color scheme across the whole setup is Catppuccin-inspired, configured in <code>.Xresources</code>. Rofi handles app launching. For file management I've been moving from Ranger to Yazi. Both are terminal file managers but Yazi is more actively developed and feels better to use.</p>
+
+      <p>Audio runs through PipeWire with EasyEffects for DSP processing. I have a Jack/PipeWire patchbay so I can route audio wherever I need it, with jack_mixer for mixing control. This ends up being important for the passthrough setup. Media playback is MPV with Vulkan rendering and hardware decode. Tmux for terminal multiplexing with a Ctrl-a prefix and Vim-style pane navigation. Newsboat for RSS.</p>
+
+      <p>The repo includes an <code>install.sh</code> that handles a fresh Arch install, 112 pacman packages and 8 from the AUR. There's also a <code>cp.sh</code> that syncs the live configs back into the repo before committing so the dotfiles stay current with how things are actually running.</p>
+
+      <a href="https://github.com/WilliamPring/dotfile" target="_blank" rel="noopener">Dotfiles on GitHub →</a>
+
+      <h2>GPU Passthrough to Windows</h2>
+
+      <p>I wanted to run Linux full time without giving up gaming or the occasional Windows-only application. Dual booting is functional but annoying since you're rebooting constantly and lose access to everything on the other OS while you're in one. The solution I landed on is GPU passthrough.</p>
+
+      <p>The idea is that Arch runs as the host and a physical GPU gets passed directly through to a Windows virtual machine. Not emulated. The VM gets actual direct hardware access to the card and performance is essentially native. One machine, one boot, two operating systems each with their own GPU.</p>
+
+      <p>The hardware feature that makes this possible is IOMMU, which is AMD-Vi on AMD CPUs and VT-d on Intel. It has to be turned on in the BIOS first. Once it is, you add <code>amd_iommu=on</code> to your kernel parameters in GRUB so Linux actually initialises it at boot.</p>
+
+      <p>From there you find the PCI IDs of the GPU you want to pass through with <code>lspci -nnk</code> and bind them to the <code>vfio-pci</code> driver. This gets configured in <code>/etc/mkinitcpio.conf</code> so vfio claims the device before any GPU driver has a chance to. If the host grabs the card first the passthrough won't work. Rebuild the initramfs after making that change.</p>
+
+      <p>The VM runs through libvirt and virt-manager with OVMF as the UEFI firmware. You set the VM firmware to UEFI, configure the CPU as host-passthrough so the guest sees real CPU features, add a VirtIO SCSI controller, and attach the passed-through GPU and its audio device. Windows setup needs VirtIO drivers loaded manually at install time because it can't see the virtual disk without them.</p>
+
+      <p>For performance I pin specific CPU cores to the VM through the virsh XML config so the host and guest aren't competing for the same threads. Hugepages help with memory latency by pre-allocating large memory pages for the VM at boot with <code>hugepages=2048</code> in the kernel parameters. Audio from the Windows VM comes back to the host through PipeWire and the Jack patchbay, which is part of why that audio setup exists in the first place.</p>
+
+      <p>If you're targeting Windows 11 you need Secure Boot and TPM 2.0. Secure Boot is handled through OVMF and TPM through <code>swtpm</code> for software emulation. One thing that caught me out early: if the host disk is encrypted and the screen freezes on boot, that's usually the passphrase prompt appearing before the display is ready. Type the passphrase blind and hit enter. It works.</p>
+
+      <a href="https://github.com/WilliamPring/GPU-Passthrough-Arch-Linux-to-Windows" target="_blank" rel="noopener">Full passthrough guide on GitHub →</a>
+    </article>
+
+    <footer class="article-footer">
+      <a href="../">← Back</a>
+    </footer>
+  </main>
+</body>
+</html>
