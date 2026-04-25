@@ -55,6 +55,14 @@ header h1 {
   margin-bottom: 0.5rem;
 }
 
+header h1 a {
+  color: inherit;
+}
+
+header h1 a:hover {
+  text-decoration: none;
+}
+
 header p {
   color: var(--muted);
   font-size: 0.95rem;
