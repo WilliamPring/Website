@@ -3,24 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Linux Machine: Arch, i3, and GPU Passthrough · William Pring</title>
-  <meta name="description" content="How William Pring got into Linux, why Arch, and the GPU passthrough setup that lets him run Windows and Linux on one machine.">
+  <title>My Linux Machine: Arch and i3 · William Pring</title>
+  <meta name="description" content="How William Pring got into Linux, why Arch, and the i3 setup he's been running and refining since 2015.">
   <link rel="canonical" href="https://williampring.ca/writing/linux-and-dotfiles.html">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://williampring.ca/writing/linux-and-dotfiles.html">
-  <meta property="og:title" content="My Linux Machine: Arch, i3, and GPU Passthrough · William Pring">
-  <meta property="og:description" content="How William Pring got into Linux, why Arch, and the GPU passthrough setup that lets him run Windows and Linux on one machine.">
+  <meta property="og:title" content="My Linux Machine: Arch and i3 · William Pring">
+  <meta property="og:description" content="How William Pring got into Linux, why Arch, and the i3 setup he's been running and refining since 2015.">
   <meta property="og:site_name" content="William Pring">
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="My Linux Machine: Arch, i3, and GPU Passthrough · William Pring">
-  <meta name="twitter:description" content="How William Pring got into Linux, why Arch, and the GPU passthrough setup that lets him run Windows and Linux on one machine.">
+  <meta name="twitter:title" content="My Linux Machine: Arch and i3 · William Pring">
+  <meta name="twitter:description" content="How William Pring got into Linux, why Arch, and the i3 setup he's been running and refining since 2015.">
   <link rel="stylesheet" href="../style.css">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "Article",
-    "headline": "My Linux Machine: Arch, i3, and GPU Passthrough",
-    "description": "How William Pring got into Linux, why Arch, and the GPU passthrough setup that lets him run Windows and Linux on one machine.",
+    "headline": "My Linux Machine: Arch and i3",
+    "description": "How William Pring got into Linux, why Arch, and the i3 setup he's been running and refining since 2015.",
     "datePublished": "2015-01-01",
     "url": "https://williampring.ca/writing/linux-and-dotfiles.html",
     "author": { "@type": "Person", "name": "William Pring", "url": "https://williampring.ca" },
@@ -33,8 +33,8 @@
     "@type": "BreadcrumbList",
     "itemListElement": [
       { "@type": "ListItem", "position": 1, "name": "William Pring", "item": "https://williampring.ca/" },
-      { "@type": "ListItem", "position": 2, "name": "Projects", "item": "https://williampring.ca/#projects" },
-      { "@type": "ListItem", "position": 3, "name": "My Linux Machine: Arch, i3, and GPU Passthrough", "item": "https://williampring.ca/writing/linux-and-dotfiles.html" }
+      { "@type": "ListItem", "position": 2, "name": "Writing", "item": "https://williampring.ca/writing.html" },
+      { "@type": "ListItem", "position": 3, "name": "My Linux Machine: Arch and i3", "item": "https://williampring.ca/writing/linux-and-dotfiles.html" }
     ]
   }
   </script>
@@ -42,12 +42,12 @@
 <body>
   <main>
     <nav class="breadcrumb">
-      <a href="../">William Pring</a> <span>/</span> <a href="../#projects">Projects</a> <span>/</span> My Linux Machine
+      <a href="../">William Pring</a> <span>/</span> <a href="../writing.html">Writing</a> <span>/</span> My Linux Machine
     </nav>
 
     <article>
       <header class="article-header">
-        <h1>My Linux Machine: Arch, i3, and GPU Passthrough</h1>
+        <h1>My Linux Machine: Arch and i3</h1>
         <p class="article-meta">Ongoing since ~2015</p>
       </header>
 
@@ -77,27 +77,13 @@
 
       <a href="https://github.com/WilliamPring/dotfile" target="_blank" rel="noopener">Dotfiles on GitHub →</a>
 
-      <h2>GPU Passthrough to Windows</h2>
+      <p>The audio setup here exists partly because of GPU passthrough. I pass a dedicated GPU through to a Windows VM running inside Arch, and audio from the VM routes back through PipeWire and the Jack patchbay. I've written that up separately.</p>
 
-      <p>I wanted to run Linux full time without giving up gaming or the occasional Windows-only application. Dual booting is functional but annoying since you're rebooting constantly and lose access to everything on the other OS while you're in one. The solution I landed on is GPU passthrough.</p>
-
-      <p>The idea is that Arch runs as the host and a physical GPU gets passed directly through to a Windows virtual machine. Not emulated. The VM gets actual direct hardware access to the card and performance is essentially native. One machine, one boot, two operating systems each with their own GPU.</p>
-
-      <p>The hardware feature that makes this possible is IOMMU, which is AMD-Vi on AMD CPUs and VT-d on Intel. It has to be turned on in the BIOS first. Once it is, you add <code>amd_iommu=on</code> to your kernel parameters in GRUB so Linux actually initialises it at boot.</p>
-
-      <p>From there you find the PCI IDs of the GPU you want to pass through with <code>lspci -nnk</code> and bind them to the <code>vfio-pci</code> driver. This gets configured in <code>/etc/mkinitcpio.conf</code> so vfio claims the device before any GPU driver has a chance to. If the host grabs the card first the passthrough won't work. Rebuild the initramfs after making that change.</p>
-
-      <p>The VM runs through libvirt and virt-manager with OVMF as the UEFI firmware. You set the VM firmware to UEFI, configure the CPU as host-passthrough so the guest sees real CPU features, add a VirtIO SCSI controller, and attach the passed-through GPU and its audio device. Windows setup needs VirtIO drivers loaded manually at install time because it can't see the virtual disk without them.</p>
-
-      <p>For performance I pin specific CPU cores to the VM through the virsh XML config so the host and guest aren't competing for the same threads. Hugepages help with memory latency by pre-allocating large memory pages for the VM at boot with <code>hugepages=2048</code> in the kernel parameters. Audio from the Windows VM comes back to the host through PipeWire and the Jack patchbay, which is part of why that audio setup exists in the first place.</p>
-
-      <p>If you're targeting Windows 11 you need Secure Boot and TPM 2.0. Secure Boot is handled through OVMF and TPM through <code>swtpm</code> for software emulation. One thing that caught me out early: if the host disk is encrypted and the screen freezes on boot, that's usually the passphrase prompt appearing before the display is ready. Type the passphrase blind and hit enter. It works.</p>
-
-      <a href="https://github.com/WilliamPring/GPU-Passthrough-Arch-Linux-to-Windows" target="_blank" rel="noopener">Full passthrough guide on GitHub →</a>
+      <a href="gpu-passthrough.html">GPU Passthrough to Windows →</a>
     </article>
 
     <footer class="article-footer">
-      <a href="../">← Back</a>
+      <a href="../writing.html">← Writing</a>
     </footer>
   </main>
 </body>

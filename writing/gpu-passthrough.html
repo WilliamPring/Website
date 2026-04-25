@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GPU Passthrough: Running Windows at Native Speed Inside Linux · William Pring</title>
+  <meta name="description" content="How William Pring set up GPU passthrough on Arch Linux to run Windows in a VM with near-native gaming performance, covering IOMMU, vfio-pci, CPU pinning, hugepages, and audio.">
+  <link rel="canonical" href="https://williampring.ca/writing/gpu-passthrough.html">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://williampring.ca/writing/gpu-passthrough.html">
+  <meta property="og:title" content="GPU Passthrough: Running Windows at Native Speed Inside Linux · William Pring">
+  <meta property="og:description" content="How William Pring set up GPU passthrough on Arch Linux to run Windows in a VM with near-native gaming performance, covering IOMMU, vfio-pci, CPU pinning, hugepages, and audio.">
+  <meta property="og:site_name" content="William Pring">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="GPU Passthrough: Running Windows at Native Speed Inside Linux · William Pring">
+  <meta name="twitter:description" content="How William Pring set up GPU passthrough on Arch Linux to run Windows in a VM with near-native gaming performance, covering IOMMU, vfio-pci, CPU pinning, hugepages, and audio.">
+  <link rel="stylesheet" href="../style.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "GPU Passthrough: Running Windows at Native Speed Inside Linux",
+    "description": "How William Pring set up GPU passthrough on Arch Linux to run Windows in a VM with near-native gaming performance, covering IOMMU, vfio-pci, CPU pinning, hugepages, and audio.",
+    "datePublished": "2024-01-01",
+    "url": "https://williampring.ca/writing/gpu-passthrough.html",
+    "author": { "@type": "Person", "name": "William Pring", "url": "https://williampring.ca" },
+    "publisher": { "@type": "Person", "name": "William Pring", "url": "https://williampring.ca" }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "William Pring", "item": "https://williampring.ca/" },
+      { "@type": "ListItem", "position": 2, "name": "Writing", "item": "https://williampring.ca/writing.html" },
+      { "@type": "ListItem", "position": 3, "name": "GPU Passthrough: Running Windows at Native Speed Inside Linux", "item": "https://williampring.ca/writing/gpu-passthrough.html" }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <main>
+    <nav class="breadcrumb">
+      <a href="../">William Pring</a> <span>/</span> <a href="../writing.html">Writing</a> <span>/</span> GPU Passthrough
+    </nav>
+
+    <article>
+      <header class="article-header">
+        <h1>GPU Passthrough: Running Windows at Native Speed Inside Linux</h1>
+        <p class="article-meta">Ongoing since ~2022</p>
+      </header>
+
+      <p>I run Arch as my host OS full time. Gaming on Linux has improved a lot, but there are still titles and applications that don't work and probably never will. Dual booting was the obvious answer and I did it for a while. It works, but it's genuinely annoying: rebooting constantly to switch, losing access to everything running on the other side, maintaining two separate system setups. GPU passthrough eliminates that tradeoff.</p>
+
+      <p>The idea is that Arch runs as the host, and a physical GPU gets passed directly through to a Windows virtual machine. Not emulated. The VM gets actual direct hardware access to the card and performance is essentially native. From inside the VM, Windows sees a real GPU with a real driver. Games run at framerates comparable to a dedicated Windows install.</p>
+
+      <h2>What You Need</h2>
+
+      <p>Not every machine can do this. You need a CPU and motherboard that support IOMMU: Intel calls it VT-d, AMD calls it AMD-Vi. Most modern processors include it, but it has to be enabled in the BIOS, and some cheaper boards don't expose the setting even when the CPU supports it.</p>
+
+      <p>You also need two GPUs. One stays with the host, one goes to the VM. The most common setup is an integrated GPU or a cheap discrete card for the host and a better discrete card for the guest. My setup uses integrated graphics for the Arch desktop and passes through the dedicated GPU to Windows.</p>
+
+      <p>RAM matters more than you might expect. You're pre-allocating memory to the VM and that memory is unavailable to the host while it's running. 16GB is workable if you're careful. 32GB is comfortable.</p>
+
+      <h2>Enabling IOMMU</h2>
+
+      <p>Start in the BIOS. Look for VT-d, AMD-Vi, IOMMU, or sometimes just a virtualisation setting in the advanced CPU options. Enable it, save, and reboot.</p>
+
+      <p>Then add it to your kernel parameters. Edit <code>/etc/default/grub</code> and append to <code>GRUB_CMDLINE_LINUX_DEFAULT</code>. For AMD:</p>
+
+      <pre><code>amd_iommu=on iommu=pt</code></pre>
+
+      <p>For Intel:</p>
+
+      <pre><code>intel_iommu=on iommu=pt</code></pre>
+
+      <p>The <code>iommu=pt</code> flag enables passthrough mode, which tells the IOMMU to only translate for devices that actually need it. This keeps host performance clean for everything that isn't being passed through. Regenerate the GRUB config and reboot:</p>
+
+      <pre><code>grub-mkconfig -o /boot/grub/grub.cfg</code></pre>
+
+      <p>After rebooting, verify IOMMU is active:</p>
+
+      <pre><code>dmesg | grep -e DMAR -e IOMMU</code></pre>
+
+      <p>You should see lines confirming IOMMU is enabled and remapping is active.</p>
+
+      <h2>Checking IOMMU Groups</h2>
+
+      <p>IOMMU groups are how the hardware isolates devices from each other. For passthrough to work, the GPU you want to pass through needs to be in its own isolated group, or every device in that group needs to be passed through together. You can't split a group.</p>
+
+      <p>This script lists all groups and the devices in them:</p>
+
+      <pre><code>for g in /sys/kernel/iommu_groups/*; do
+  echo "Group ${g##*/}:"
+  for d in $g/devices/*; do
+    echo -e "\t$(lspci -nns ${d##*/})"
+  done
+done</code></pre>
+
+      <p>Find your GPU in the output. The GPU and its HDMI audio device will typically share one group. If that group contains only those two devices you're in good shape. If unrelated devices are mixed in, you have a problem. Some motherboards handle grouping well, others don't. There's an ACS override patch that can work around bad groupings, but it requires building a custom kernel and has real security implications, so it's worth exhausting every other option first.</p>
+
+      <h2>Binding the GPU to vfio-pci</h2>
+
+      <p>Find your GPU's vendor and device IDs:</p>
+
+      <pre><code>lspci -nnk</code></pre>
+
+      <p>Look for your discrete GPU and its HDMI audio device. Each entry ends with an ID in the format <code>[xxxx:xxxx]</code>. Note both.</p>
+
+      <p>Create <code>/etc/modprobe.d/vfio.conf</code> and add both IDs:</p>
+
+      <pre><code>options vfio-pci ids=10de:XXXX,10de:XXXX</code></pre>
+
+      <p>Then edit <code>/etc/mkinitcpio.conf</code>. In the <code>MODULES</code> array, add the vfio modules before any GPU driver:</p>
+
+      <pre><code>MODULES=(vfio_pci vfio vfio_iommu_type1 ...)</code></pre>
+
+      <p>Order matters here. <code>vfio_pci</code> must load before <code>amdgpu</code>, <code>nouveau</code>, or <code>nvidia</code>. If the GPU driver loads first it claims the device and vfio can't get it back. Rebuild the initramfs:</p>
+
+      <pre><code>mkinitcpio -p linux</code></pre>
+
+      <p>After rebooting, confirm the binding took:</p>
+
+      <pre><code>lspci -nnk</code></pre>
+
+      <p>The GPU should now show <code>Kernel driver in use: vfio-pci</code> instead of an AMD or NVIDIA driver.</p>
+
+      <h2>Setting Up the VM</h2>
+
+      <p>Install the required packages:</p>
+
+      <pre><code>pacman -S qemu-desktop libvirt virt-manager ovmf</code></pre>
+
+      <p>Enable and start libvirt:</p>
+
+      <pre><code>systemctl enable --now libvirtd</code></pre>
+
+      <p>In virt-manager, create a new VM. The important configuration points, in order:</p>
+
+      <p>Set the firmware to UEFI and select the OVMF firmware file. Do not use the default BIOS option; the GPU requires UEFI to initialise properly.</p>
+
+      <p>Set the CPU to host-passthrough and enable copy host CPU configuration. This gives the guest access to the actual CPU feature flags, which matters for performance and for some games that check CPU capabilities.</p>
+
+      <p>Add a VirtIO SCSI controller before attaching any disk. Attach the disk to the VirtIO SCSI bus. Windows won't recognise this disk during installation without drivers, which you handle in the next step.</p>
+
+      <p>Add the passed-through GPU: Add Hardware, PCI Host Device, select your GPU. Add the GPU's HDMI audio device the same way.</p>
+
+      <p>Remove the default Spice display and QXL video device. The passed-through GPU handles display now; the virtual display devices will conflict.</p>
+
+      <p>For the Windows install, attach the VirtIO driver ISO from Fedora as a second CD-ROM alongside your Windows ISO. When the installer says it can't find a disk, browse to the driver ISO and load the VirtIO SCSI driver. The disk will appear.</p>
+
+      <h2>CPU Pinning</h2>
+
+      <p>By default, QEMU schedules VM threads across whatever cores are available. This means the host and the VM compete for the same CPU threads, which causes stuttering and latency spikes inside the VM. CPU pinning assigns specific physical cores exclusively to the VM.</p>
+
+      <p>Check your CPU topology first:</p>
+
+      <pre><code>lscpu -e</code></pre>
+
+      <p>This shows which logical CPUs share a physical core (siblings). For a CPU with 8 cores and hyperthreading, you want to give the VM a matched set: physical cores with both their sibling threads. That way the guest doesn't get half a core.</p>
+
+      <p>Edit the VM XML directly:</p>
+
+      <pre><code>virsh edit &lt;vm-name&gt;</code></pre>
+
+      <p>Add a <code>cputune</code> block with <code>vcpupin</code> entries mapping virtual CPUs to physical CPU threads. Also add an <code>emulatorpin</code> entry to lock the QEMU emulator threads to the host's remaining cores. The exact mapping depends on your CPU topology. The goal is zero overlap between host cores and guest cores.</p>
+
+      <h2>Memory Hugepages</h2>
+
+      <p>Normal memory pages are 4KB. The VM constantly translates virtual to physical addresses across all of them. Hugepages bump that to 2MB per page, which reduces the number of translations significantly and improves memory latency inside the guest.</p>
+
+      <p>Add this to your kernel parameters in <code>/etc/default/grub</code>:</p>
+
+      <pre><code>hugepages=2048</code></pre>
+
+      <p>That pre-allocates 2048 pages at 2MB each, totalling 4GB. Size it to roughly match the RAM you're assigning to the VM. Static hugepages are claimed at boot before memory fragments, so they're more reliable than dynamic allocation at runtime.</p>
+
+      <p>In the VM XML, tell libvirt to use them:</p>
+
+      <pre><code>&lt;memoryBacking&gt;
+  &lt;hugepages/&gt;
+&lt;/memoryBacking&gt;</code></pre>
+
+      <h2>CPU Governor</h2>
+
+      <p>Linux's default CPU governor throttles clock speed when load is low. When the VM is running you want the CPUs pegged at maximum frequency. You can automate the switch using libvirt hooks.</p>
+
+      <p>Create a script at <code>/etc/libvirt/hooks/qemu</code>. The hook receives the VM name, the operation (start, stopped), and the phase as arguments. On start, set the governor to <code>performance</code> for every CPU. On stop, restore it to your preferred idle governor. Make the file executable.</p>
+
+      <p>This is one of the more noticeable tuning steps. Switching from <code>schedutil</code> to <code>performance</code> removes a source of latency that shows up as microstutters in games, particularly in CPU-heavy scenes.</p>
+
+      <h2>Audio</h2>
+
+      <p>Getting audio out of the Windows VM and into the host is its own problem. The approach I use is Scream, a virtual audio driver for Windows that streams audio over the local network (or via shared memory on the same machine).</p>
+
+      <p>Install the Scream driver in Windows. On the Linux side, run the Scream receiver, which outputs to whatever PipeWire sink you point it at. From there the audio goes through EasyEffects the same as any other source on the system. Latency over shared memory is low enough that it's not noticeable in practice.</p>
+
+      <p>This is part of why the PipeWire and Jack patchbay setup in my <a href="linux-and-dotfiles.html">Linux machine write-up</a> is more elaborate than it might seem. Routing VM audio through the same patchbay as everything else means it behaves consistently with the rest of the system.</p>
+
+      <h2>Windows 11</h2>
+
+      <p>Windows 11 requires Secure Boot and TPM 2.0. Both are achievable in a VM.</p>
+
+      <p>For Secure Boot, OVMF includes Secure Boot support. In the VM firmware settings, enable it and enroll the Microsoft keys. virt-manager exposes this in the firmware selection when you pick the Secure Boot variant of the OVMF firmware file.</p>
+
+      <p>For TPM 2.0, install <code>swtpm</code>:</p>
+
+      <pre><code>pacman -S swtpm</code></pre>
+
+      <p>Add a TPM device to the VM via virt-manager: Add Hardware, TPM, set model to TIS and version to 2.0 with the emulated backend. libvirt handles starting and stopping swtpm automatically when the VM runs.</p>
+
+      <p>Some games with anti-cheat check for hypervisor signatures and refuse to run if they detect a VM. You can mask this from the guest by adding to the VM XML:</p>
+
+      <pre><code>&lt;features&gt;
+  &lt;hyperv&gt;
+    &lt;vendor_id state="on" value="randomstring"/&gt;
+  &lt;/hyperv&gt;
+  &lt;kvm&gt;
+    &lt;hidden state="on"/&gt;
+  &lt;/kvm&gt;
+&lt;/features&gt;</code></pre>
+
+      <p>This tells QEMU not to expose KVM to the guest. The performance impact is minimal. The vendor ID value can be any alphanumeric string up to 12 characters.</p>
+
+      <h2>Common Issues</h2>
+
+      <p>If the screen freezes at boot on the host, the disk encryption passphrase prompt is probably appearing before the display initialises. The system is waiting for input. Type the passphrase blind and hit enter. It goes through.</p>
+
+      <p>If the GPU fails to reset cleanly between VM starts, you may be hitting the GPU reset bug. This affects certain AMD GPU families where the card doesn't fully reset when the VM shuts down, leaving it in a broken state. The <code>vendor-reset</code> module from AUR implements proper reset support for affected cards. Install it and load it before the vfio modules.</p>
+
+      <p>If you get a black screen when the VM starts, check that vfio-pci actually claimed the GPU. Run <code>lspci -nnk</code> and look at the GPU entry. If it shows <code>amdgpu</code> or <code>nvidia</code> as the kernel driver instead of <code>vfio-pci</code>, the GPU driver loaded first and won the race. Double-check the module ordering in <code>mkinitcpio.conf</code> and rebuild the initramfs.</p>
+
+      <p>If performance inside the VM feels uneven even after pinning and hugepages, check whether the CPU governor is actually switching. <code>cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor</code> should return <code>performance</code> while the VM is running. If it doesn't, the hook isn't firing.</p>
+
+      <a href="https://github.com/WilliamPring/GPU-Passthrough-Arch-Linux-to-Windows" target="_blank" rel="noopener">Full passthrough guide on GitHub →</a>
+    </article>
+
+    <footer class="article-footer">
+      <a href="../writing.html">← Writing</a>
+    </footer>
+  </main>
+</body>
+</html>
