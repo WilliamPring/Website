@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-SITE_ROOT="$(cd "$(dirname "$0")" && pwd)"
+SITE_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 echo "New writing piece"
 echo "-----------------"
