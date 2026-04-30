@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GPU Passthrough: Running Windows at Native Speed Inside Linux · William Pring</title>
   <meta name="description" content="How William Pring set up GPU passthrough on Arch Linux to run Windows in a VM with near-native gaming performance, covering IOMMU, vfio-pci, CPU pinning, hugepages, and audio.">
-  <link rel="canonical" href="https://williampring.ca/writing/gpu-passthrough.html">
+  <link rel="canonical" href="https://williampring.ca/writing/gpu-passthrough">
   <meta property="og:type" content="article">
-  <meta property="og:url" content="https://williampring.ca/writing/gpu-passthrough.html">
+  <meta property="og:url" content="https://williampring.ca/writing/gpu-passthrough">
   <meta property="og:title" content="GPU Passthrough: Running Windows at Native Speed Inside Linux · William Pring">
   <meta property="og:description" content="How William Pring set up GPU passthrough on Arch Linux to run Windows in a VM with near-native gaming performance, covering IOMMU, vfio-pci, CPU pinning, hugepages, and audio.">
   <meta property="og:site_name" content="William Pring">
@@ -22,7 +22,7 @@
     "headline": "GPU Passthrough: Running Windows at Native Speed Inside Linux",
     "description": "How William Pring set up GPU passthrough on Arch Linux to run Windows in a VM with near-native gaming performance, covering IOMMU, vfio-pci, CPU pinning, hugepages, and audio.",
     "datePublished": "2024-01-01",
-    "url": "https://williampring.ca/writing/gpu-passthrough.html",
+    "url": "https://williampring.ca/writing/gpu-passthrough",
     "author": { "@type": "Person", "name": "William Pring", "url": "https://williampring.ca" },
     "publisher": { "@type": "Person", "name": "William Pring", "url": "https://williampring.ca" }
   }
@@ -33,8 +33,8 @@
     "@type": "BreadcrumbList",
     "itemListElement": [
       { "@type": "ListItem", "position": 1, "name": "William Pring", "item": "https://williampring.ca/" },
-      { "@type": "ListItem", "position": 2, "name": "Writing", "item": "https://williampring.ca/writing.html" },
-      { "@type": "ListItem", "position": 3, "name": "GPU Passthrough: Running Windows at Native Speed Inside Linux", "item": "https://williampring.ca/writing/gpu-passthrough.html" }
+      { "@type": "ListItem", "position": 2, "name": "Writing", "item": "https://williampring.ca/writing" },
+      { "@type": "ListItem", "position": 3, "name": "GPU Passthrough: Running Windows at Native Speed Inside Linux", "item": "https://williampring.ca/writing/gpu-passthrough" }
     ]
   }
   </script>
@@ -42,7 +42,7 @@
 <body>
   <main>
     <nav class="breadcrumb">
-      <a href="../">William Pring</a> <span>/</span> <a href="../writing.html">Writing</a> <span>/</span> GPU Passthrough
+      <a href="../">William Pring</a> <span>/</span> <a href="../writing">Writing</a> <span>/</span> GPU Passthrough
     </nav>
 
     <article>
@@ -196,7 +196,7 @@ done</code></pre>
 
       <p>Install the Scream driver in Windows. On the Linux side, run the Scream receiver, which outputs to whatever PipeWire sink you point it at. From there the audio goes through EasyEffects the same as any other source on the system. Latency over shared memory is low enough that it's not noticeable in practice.</p>
 
-      <p>This is part of why the PipeWire and Jack patchbay setup in my <a href="linux-and-dotfiles.html">Linux machine write-up</a> is more elaborate than it might seem. Routing VM audio through the same patchbay as everything else means it behaves consistently with the rest of the system.</p>
+      <p>This is part of why the PipeWire and Jack patchbay setup in my <a href="linux-and-dotfiles">Linux machine write-up</a> is more elaborate than it might seem. Routing VM audio through the same patchbay as everything else means it behaves consistently with the rest of the system.</p>
 
       <h2>Windows 11</h2>
 
@@ -237,7 +237,7 @@ done</code></pre>
     </article>
 
     <footer class="article-footer">
-      <a href="../writing.html">← Writing</a>
+      <a href="../writing">← Writing</a>
     </footer>
   </main>
 </body>
